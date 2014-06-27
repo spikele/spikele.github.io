@@ -142,6 +142,11 @@
                     var image = document.getElementById("dot");
                     image.src = "http://www.thepointless.com/images/greendot.jpg";
     }}
+    //Show Leads with their status in green if the Lead has the according to the scheduled date right status, else in red.
+  	function LeadStatus(LNum, expStatus, p, resp) {
+  	    if (p.elId == 'Create Lead'+LNum && resp.status == expStatus) {$('#L'+LNum).addClass('LstatusT')}
+  	    else if(p.elId == 'Create Lead'+LNum) {$('#L'+LNum).addClass('LstatusF')};
+  	}
   	var data1 = [
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead1' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2015-01-01T01:01:01"}},
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead2' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": today}},
@@ -167,14 +172,9 @@
   	          else if (p.elId == 'Create Lead2'){ID2 = resp.id}
   	          else {ID3 = resp.id};
   	  
-  	          //Show Leads with their status in green if the Lead has the according to the scheduled date right status, else in red.
-  	          function LeadStatus(LNum, expStatus) {
-  	                if (p.elId == 'Create Lead'+LNum && resp.status == expStatus) {$('#L'+LNum).addClass('LstatusT')}
-  	                else if(p.elId == 'Create Lead'+LNum) {$('#L'+LNum).addClass('LstatusF')};
-  	          }
-          	  LeadStatus(1, "ComingUp")
-          	  LeadStatus(2, "Today")
-          	  LeadStatus(3, "Hanging")
+          	  LeadStatus(1, "ComingUp", p, resp)
+          	  LeadStatus(2, "Today", p, resp)
+          	  LeadStatus(3, "Hanging", p, resp)
   	  
               p.$link.addClass('loaded');
           	  $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
