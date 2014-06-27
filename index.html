@@ -66,9 +66,7 @@
     </style>
   </head>
   <body>
-  	
-  	<img id="dot" src="http://4.bp.blogspot.com/_wWmWqyCEKEs/TSEQUbgrQZI/AAAAAAAADuQ/nle2R79B7Tw/s200/old_employee.png" alt="dot" align="right">
-  
+  <img id="dot" src="http://4.bp.blogspot.com/_wWmWqyCEKEs/TSEQUbgrQZI/AAAAAAAADuQ/nle2R79B7Tw/s200/old_employee.png" alt="dot" align="right">
   <h3>Number of Successes:</h3> 
   <p id="Successes"></p>  
   <p id="L1">Lead1(ComingUp)</p><p id="L2">Lead2(Today)</p><p id="L3">Lead3(Hanging)</p>
@@ -85,74 +83,94 @@
   	var ID2 ='test2';
     var ID3 ='test3'
     
+    //Get the current Date.
     var d = new Date();
-    
         var today = new Date();
         var dd = today.getDate();
         var mm = today.getMonth()+1;
         var yyyy = today.getFullYear();
-            if(dd<10) {
-            dd='0'+dd
-            } 
-            if(mm<10) {
-            mm='0'+mm
-            } 
+            if(dd<10) {dd='0'+dd}
+            if(mm<10) {mm='0'+mm} 
         today = yyyy+'-'+mm+'-'+dd+'T00:00:00';
-        document.write(today);
+  	
+  	function FAIL(resp, status, msg, p){
+  	    var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
+        var head = (fullContent.match(/\<head[^\>]*\>(.*)\<\/head\>/) || ['',''])[1];
+        var body = (fullContent.match(/\<body[^\>]*\>(.*)\<\/body\>/) || ['',''])[1];
+        var _bodyAttr = (fullContent.match(/\<body([^\>]*)\>/) || ['',''])[1];
+        var bodyAttr = {};
+        var iframe = $("<iframe>");
+        
+        if (body === '') {
+                $('<h3></h3>').appendTo(p.$el).text(status + ": " + msg);
+                $("<pre></pre>").appendTo(p.$el).text(resp.responseText);
+                return
+              }
+
+              $(_bodyAttr.split(' ')).each(function(counter, x) {
+                if (x === "") return;
+                var part = x.split('=');
+                var key = part[0];
+                var value = part[1];
+                bodyAttr[key] = value.slice(1, value.length-1);
+              });
+
+              $('<h3></h3>').appendTo(p.$el).text(status + ": " + msg);
+              p.$el.append(iframe);
+              iframe.contents().find('head').html(head);
+              iframe.contents().find('body').attr(bodyAttr).html(body);
+  	}
+  	
+  	function addOV(p){
+  	    p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
+        $("#results").append(p.$el);
+        p.$link = $('<li><a href="#'+ p.elId+'"><span>'+ p.elId +'</span>('+ p.url +')</a></li>');
+        $("#nav").append(p.$link);
+    }
   	
   	var data1 = [
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead1' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2015-01-01T01:01:01"}},
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead2' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": today}},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead3' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2013-01-01T01:01:01"}}
   	]
-  	
-  	
-  	data1.forEach(function(p) {
-  	
-  	    p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
-        $("#results").append(p.$el);
-        p.$link = $('<li><a href="#'+ p.elId+'"><span>'+ p.elId +'</span>('+ p.url +')</a></li>');
-        $("#nav").append(p.$link);
     
     
-    
-  	$.ajax({
-  	  url: p.url,
-  	  method: (p.METHOD),
-  	  type: 'json',
-  	  async: false,
-  	  data: (p.DATA)
-  	  
-  	}).done(function(resp) {
-  	  if(!resp)return;
-  	  Successes++
-  	  if(p.elId == 'Create Lead1'){ID1 = resp.id;}
-  	  else if (p.elId == 'Create Lead2'){ID2 = resp.id}
-  	  else {ID3 = resp.id};
-  	  
-  	  if (p.elId == 'Create Lead1' && resp.status == "ComingUp") {$(document.getElementById("L1")).addClass('LstatusT')}
-      else if(p.elId == 'Create Lead1') {$(document.getElementById("L1")).addClass('LstatusF')};
-      if (p.elId == 'Create Lead2' && resp.status == "Today") {$(document.getElementById("L2")).addClass('LstatusT')}
-      else if(p.elId == 'Create Lead2') {$(document.getElementById("L2")).addClass('LstatusF')};
-      if (p.elId == 'Create Lead3' && resp.status == "Hanging") {$(document.getElementById("L3")).addClass('LstatusT')}
-      else if(p.elId == 'Create Lead3') {$(document.getElementById("L3")).addClass('LstatusF')};
-      p.$link.addClass('loaded');
-  	  $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
+    data1.forEach(function(p) {
+        addOV(p)
+            
+        $.ajax({
+  	      url: p.url,
+          method: (p.METHOD),
+          type: 'json',
+          async: false,
+       	  data: (p.DATA)
   	  
   	  
+  	        }).done(function(resp) {
+  	          if(!resp)return;
+  	          Successes++
+  	          if(p.elId == 'Create Lead1'){ID1 = resp.id;}
+  	          else if (p.elId == 'Create Lead2'){ID2 = resp.id}
+  	          else {ID3 = resp.id};
   	  
-  	}).fail(function(resp, status, msg) {
-              var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
-              var head = (fullContent.match(/\<head[^\>]*\>(.*)\<\/head\>/) || ['',''])[1];
-              var body = (fullContent.match(/\<body[^\>]*\>(.*)\<\/body\>/) || ['',''])[1];
-              var _bodyAttr = (fullContent.match(/\<body([^\>]*)\>/) || ['',''])[1];
-              var bodyAttr = {};
-              var iframe = $("<iframe>");
-          tlink.addClass('error');        
-      })
+  	          //Show Leads with their status in green if the Lead has the according to the scheduled date right status, else in red.
+  	          function LeadStatus(LNum, expStatus) {
+  	                if (p.elId == 'Create Lead'+LNum && resp.status == expStatus) {$('#L'+LNum).addClass('LstatusT')}
+  	                else if(p.elId == 'Create Lead'+LNum) {$('#L'+LNum).addClass('LstatusF')};
+  	          }
+          	  LeadStatus(1, "ComingUp")
+          	  LeadStatus(2, "Today")
+          	  LeadStatus(3, "Hanging")
+  	  
+              p.$link.addClass('loaded');
+          	  $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
+  	  
+  	  
+          	}).fail(function(resp, status, msg) {
+              FAIL(resp, status, msg, p);
+              p.$link.addClass('error');        
+            })
     })
-    
-    
     
     
   	var data = [
@@ -169,33 +187,35 @@
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete3', 'METHOD': 'DELETE'}
   	];
   	
+  	//number of items with property 'url' in data
   	var URLsInData = 0
             data.forEach(function(p){
                 if (p.url){
                     URLsInData++;
                 }
             })     
+    //number of items with property 'url' in data1
     var URLsInData1 = 0
             data1.forEach(function(p){
                 if (p.url){
                     URLsInData1++;
                 }
-            })          
-               
+            })  
+  	        
+   //number of items in nav
    var numEndpoints = URLsInData + URLsInData1
    
+   
   	data.forEach(function(p){
-            p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
-            $("#results").append(p.$el);
-            p.$link = $('<li><a href="#'+ p.elId+'"><span>'+ p.elId +'</span>('+ p.url +')</a></li>');
-            $("#nav").append(p.$link);
-               
+        addOV(p)
             
-            $.ajax({
-              url: p.url,
-              method: (p.METHOD),
-              type: 'json',
-              data: (p.DATA)
+        $.ajax({
+          url: p.url,
+          method: (p.METHOD),
+          type: 'json',
+          data: (p.DATA)
+            
+            
             }).done(function(resp) {
               if(!resp && p.elId != 'Lead Delete1' && p.elId != 'Lead Delete2' && p.elId != 'Lead Delete3')return;
               $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
@@ -203,31 +223,21 @@
                 function addLoadedClass() {
                     p.$link.addClass('loaded');
                     Successes++;
-                    document.getElementById("Successes").innerHTML=Successes+'/'+numEndpoints;
+                    $("#Successes").html(Successes+'/'+numEndpoints);
                     if (Successes >= URLsInData + URLsInData1) {
-                        var image = document.getElementById("dot");
+                        var image = $("#dot");
                         image.src = "http://www.thepointless.com/images/greendot.jpg";
-                    }
-                }
-              
+                }}
                 addLoadedClass()
                 
-			    
               
             }).fail(function(resp, status, msg) {
-              var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
-              var head = (fullContent.match(/\<head[^\>]*\>(.*)\<\/head\>/) || ['',''])[1];
-              var body = (fullContent.match(/\<body[^\>]*\>(.*)\<\/body\>/) || ['',''])[1];
-              var _bodyAttr = (fullContent.match(/\<body([^\>]*)\>/) || ['',''])[1];
-              var bodyAttr = {};
-              var iframe = $("<iframe>");
-              
-              	function addErrorClass() {
+             FAIL(resp, status, msg, p)
+             function addErrorClass() {
                     p.$link.addClass('error');
-                    var image = document.getElementById("dot"); 
+                    var image = $("#dot"); 
                     image.src = "http://www.thepointless.com/images/reddot.jpg";
                 }
-                
                 addErrorClass()
             });
         });
