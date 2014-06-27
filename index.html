@@ -92,7 +92,7 @@
             if(dd<10) {dd='0'+dd}
             if(mm<10) {mm='0'+mm} 
         today = yyyy+'-'+mm+'-'+dd+'T00:00:00';
-  	
+  	//Function to be executed if ajax call is not successful.
   	function FAIL(resp, status, msg, p){
   	    var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
         var head = (fullContent.match(/\<head[^\>]*\>(.*)\<\/head\>/) || ['',''])[1];
@@ -120,14 +120,28 @@
               iframe.contents().find('head').html(head);
               iframe.contents().find('body').attr(bodyAttr).html(body);
   	}
-  	
+  	//Function to be executed for every object in data and data1.
   	function addOV(p){
   	    p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
         $("#results").append(p.$el);
         p.$link = $('<li><a href="#'+ p.elId+'"><span>'+ p.elId +'</span>('+ p.url +')</a></li>');
         $("#nav").append(p.$link);
     }
-  	
+  	//Make p the class "error".
+  	function addErrorClass(p) {
+                    p.$link.addClass('error');
+                    var image = $("#dot"); 
+                    image.src = "http://www.thepointless.com/images/reddot.jpg";
+    }
+    //Make p the class "loaded".
+    function addLoadedClass(p) {
+                    p.$link.addClass('loaded');
+                    Successes++;
+                    document.getElementById("Successes").innerHTML=Successes+'/'+numEndpoints;
+                    if (Successes >= URLsInData + URLsInData1) {
+                    var image = document.getElementById("dot");
+                    image.src = "http://www.thepointless.com/images/greendot.jpg";
+    }}
   	var data1 = [
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead1' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2015-01-01T01:01:01"}},
   	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead2' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": today}},
@@ -219,26 +233,12 @@
             }).done(function(resp) {
               if(!resp && p.elId != 'Lead Delete1' && p.elId != 'Lead Delete2' && p.elId != 'Lead Delete3')return;
               $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
-             
-                function addLoadedClass() {
-                    p.$link.addClass('loaded');
-                    Successes++;
-                    $("#Successes").html(Successes+'/'+numEndpoints);
-                    if (Successes >= URLsInData + URLsInData1) {
-                        var image = $("#dot");
-                        image.src = "http://www.thepointless.com/images/greendot.jpg";
-                }}
-                addLoadedClass()
+              addLoadedClass(p)
                 
               
             }).fail(function(resp, status, msg) {
              FAIL(resp, status, msg, p)
-             function addErrorClass() {
-                    p.$link.addClass('error');
-                    var image = $("#dot"); 
-                    image.src = "http://www.thepointless.com/images/reddot.jpg";
-                }
-                addErrorClass()
+             addErrorClass(p)
             });
         });
   	</script>
