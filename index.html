@@ -94,31 +94,31 @@
         today = yyyy+'-'+mm+'-'+dd+'T00:00:00';
   	//Function to be executed if ajax call is not successful.
   	function FAIL(resp, status, msg, p){
-  	    var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
+  	    p.$link.addClass('error');
+        var image = document.getElementById("dot");
+        image.src = "http://www.thepointless.com/images/reddot.jpg";
+        var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
         var head = (fullContent.match(/\<head[^\>]*\>(.*)\<\/head\>/) || ['',''])[1];
         var body = (fullContent.match(/\<body[^\>]*\>(.*)\<\/body\>/) || ['',''])[1];
         var _bodyAttr = (fullContent.match(/\<body([^\>]*)\>/) || ['',''])[1];
         var bodyAttr = {};
         var iframe = $("<iframe>");
-        
         if (body === '') {
                 $('<h3></h3>').appendTo(p.$el).text(status + ": " + msg);
                 $("<pre></pre>").appendTo(p.$el).text(resp.responseText);
                 return
               }
-
-              $(_bodyAttr.split(' ')).each(function(counter, x) {
-                if (x === "") return;
-                var part = x.split('=');
-                var key = part[0];
-                var value = part[1];
-                bodyAttr[key] = value.slice(1, value.length-1);
-              });
-
-              $('<h3></h3>').appendTo(p.$el).text(status + ": " + msg);
-              p.$el.append(iframe);
-              iframe.contents().find('head').html(head);
-              iframe.contents().find('body').attr(bodyAttr).html(body);
+        $(_bodyAttr.split(' ')).each(function(counter, x) {
+            if (x === "") return;
+            var part = x.split('=');
+            var key = part[0];
+            var value = part[1];
+            bodyAttr[key] = value.slice(1, value.length-1);
+          });
+        $('<h3></h3>').appendTo(p.$el).text(status + ": " + msg);
+        p.$el.append(iframe);
+        iframe.contents().find('head').html(head);
+        iframe.contents().find('body').attr(bodyAttr).html(body);
   	}
   	//Function to be executed for every object in data and data1.
   	function addOV(p){
@@ -127,120 +127,85 @@
         p.$link = $('<li><a href="#'+ p.elId+'"><span>'+ p.elId +'</span>('+ p.url +')</a></li>');
         $("#nav").append(p.$link);
     }
-  	//Make p the class "error".
-  	function addErrorClass(p) {
-                    p.$link.addClass('error');
-                    var image = $("#dot"); 
-                    image.src = "http://www.thepointless.com/images/reddot.jpg";
-    }
     //Make p the class "loaded".
     function addLoadedClass(p) {
-                    p.$link.addClass('loaded');
-                    Successes++;
-                    document.getElementById("Successes").innerHTML=Successes+'/'+numEndpoints;
-                    if (Successes >= URLsInData + URLsInData1) {
-                    var image = document.getElementById("dot");
-                    image.src = "http://www.thepointless.com/images/greendot.jpg";
-    }}
+        p.$link.addClass('loaded');
+        Successes++;
+        document.getElementById("Successes").innerHTML=Successes+'/'+URLsInData;
+        if (Successes == URLsInData) {
+            var image = document.getElementById("dot");
+            image.src = "http://www.thepointless.com/images/greendot.jpg"}              
+    }
     //Show Leads with their status in green if the Lead has the according to the scheduled date right status, else in red.
   	function LeadStatus(LNum, expStatus, p, resp) {
   	    if (p.elId == 'Create Lead'+LNum && resp.status == expStatus) {$('#L'+LNum).addClass('LstatusT')}
   	    else if(p.elId == 'Create Lead'+LNum) {$('#L'+LNum).addClass('LstatusF')};
   	}
-  	var data1 = [
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead1' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2015-01-01T01:01:01"}},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead2' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": today}},
-    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId':'Create Lead3' ,'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2013-01-01T01:01:01"}}
-  	]
-    
-    
-    data1.forEach(function(p) {
-        addOV(p)
-            
-        $.ajax({
-  	      url: p.url,
-          method: (p.METHOD),
-          type: 'json',
-          async: false,
-       	  data: (p.DATA)
-  	  
-  	  
-  	        }).done(function(resp) {
-  	          if(!resp)return;
-  	          Successes++
-  	          if(p.elId == 'Create Lead1'){ID1 = resp.id;}
-  	          else if (p.elId == 'Create Lead2'){ID2 = resp.id}
-  	          else {ID3 = resp.id};
-  	  
-          	  LeadStatus(1, "ComingUp", p, resp)
-          	  LeadStatus(2, "Today", p, resp)
-          	  LeadStatus(3, "Hanging", p, resp)
-  	  
-              p.$link.addClass('loaded');
-          	  $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
-  	  
-  	  
-          	}).fail(function(resp, status, msg) {
-              FAIL(resp, status, msg, p);
-              p.$link.addClass('error');        
-            })
-    })
-    
     
   	var data = [
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/config/?api_key=1234asdf23t523f5ya', 'elId': 'Config','METHOD': 'GET'},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead1', 'METHOD': 'GET'},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead2', 'METHOD': 'GET'},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead3', 'METHOD': 'GET'},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId': 'Edit Lead', 'METHOD': 'PUT', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/hanging?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Hanging Leads', 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/comingup?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Coming up Leads', 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/today?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Todays Leads', 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete1', 'METHOD': 'DELETE'},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete2', 'METHOD': 'DELETE'},
-  	{'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete3', 'METHOD': 'DELETE'}
-  	];
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId': 'Create Lead1', 'ASYNC': false, 'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2015-01-01T01:01:01"}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId': 'Create Lead2', 'ASYNC': false, 'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": today}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId': 'Create Lead3', 'ASYNC': false, 'METHOD': 'POST', 'DATA':{"Title": "Intersting Dev Project", "Description": "something about maps, payment and instagram for pets. Its going to drive conversion and customer retention", "Scheduled": "2013-01-01T01:01:01"}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/config/?api_key=1234asdf23t523f5ya', 'elId': 'Config', 'ASYNC': true, 'METHOD': 'GET'},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead1', 'ASYNC': true, 'METHOD': 'GET'},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead2', 'ASYNC': true, 'METHOD': 'GET'},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead3', 'ASYNC': true, 'METHOD': 'GET'},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId': 'Edit Lead', 'ASYNC': true, 'METHOD': 'PUT', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/hanging?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Hanging Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/comingup?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Coming up Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/today?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Todays Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete1', 'ASYNC': true, 'METHOD': 'DELETE'},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete2', 'ASYNC': true, 'METHOD': 'DELETE'},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete3', 'ASYNC': true, 'METHOD': 'DELETE'}
+    ];
   	
   	//number of items with property 'url' in data
   	var URLsInData = 0
             data.forEach(function(p){
-                if (p.url){
-                    URLsInData++;
-                }
+                if (p.url) {URLsInData++}
             })     
-    //number of items with property 'url' in data1
-    var URLsInData1 = 0
-            data1.forEach(function(p){
-                if (p.url){
-                    URLsInData1++;
-                }
-            })  
-  	        
-   //number of items in nav
-   var numEndpoints = URLsInData + URLsInData1
    
-   
-  	data.forEach(function(p){
-        addOV(p)
-            
+    for (i=0; i < data.length; i++) {
+      (function(index) {
+      var p = data[index]
+      addOV(p)
+      
         $.ajax({
-          url: p.url,
+  	      url: p.url,
           method: (p.METHOD),
           type: 'json',
-          data: (p.DATA)
-            
-            
-            }).done(function(resp) {
-              if(!resp && p.elId != 'Lead Delete1' && p.elId != 'Lead Delete2' && p.elId != 'Lead Delete3')return;
-              $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
+          async: (p.ASYNC),
+       	  data: (p.DATA)
+  	  
+  	        }).done(function(resp) {
+  	          if(!resp && p.elId != 'Lead Delete1' && p.elId != 'Lead Delete2' && p.elId != 'Lead Delete3')return;
+  	          
+  	          if(p.elId == 'Create Lead1'){ID1 = resp.id;}
+  	          else if (p.elId == 'Create Lead2'){ID2 = resp.id}
+  	          else if (p.elId == 'Create Lead3'){ID3 = resp.id};
+  	  
+  	          if (p.elId=='Create Lead1' || p.elId=='Create Lead2' || p.elId=='Create Lead3')  {
+          	     LeadStatus(1, "ComingUp", p, resp)
+          	     LeadStatus(2, "Today", p, resp)
+          	     LeadStatus(3, "Hanging", p, resp)
+          	  };
               addLoadedClass(p)
-                
-              
-            }).fail(function(resp, status, msg) {
-             FAIL(resp, status, msg, p)
-             addErrorClass(p)
-            });
-        });
+  	          $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
+  	          
+  	          if(p.elId == 'Create Lead3') {
+  	             data[i+2].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya'
+  	             data[i+3].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya'
+  	             data[i+4].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya'
+  	             data[i+9].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya'
+  	             data[i+10].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya'
+  	             data[i+11].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya'
+  	          }
+  	          
+          	}).fail(function(resp, status, msg) { 
+              FAIL(resp, status, msg, p);
+            })
+        })(i);
+      }
   	</script>
   </body>
 </html>
