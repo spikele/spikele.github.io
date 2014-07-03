@@ -34,9 +34,12 @@
         background-color: rgba(0,0,0,.2);
       }
 
-      .nav > li.loaded span {
+      .nav > li.loaded span.elId {
         font-weight:900;
         text-transform: uppercase;
+      }
+      .nav > li.long span.time {
+        color:#CC0000
       }
       .nav > li.error {
         color:white;
@@ -92,7 +95,14 @@
             if(dd<10) {dd='0'+dd}
             if(mm<10) {mm='0'+mm} 
         today = yyyy+'-'+mm+'-'+dd+'T00:00:00';
-  	//Function to be executed if ajax call is not successful.
+  	//Function to be executed for every object in data and data1.
+  	function addOV(p, totalTime){
+  	    p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
+        $("#results").append(p.$el);
+        p.$link = $('<li class="LI"><a href="#'+ p.elId+'"><span class="elId">'+ p.elId +'</span>('+ p.url +')<span class="time">'+totalTime+'ms'+'</span></a></li>');
+        $("#nav").append(p.$link);
+    }
+    //Function to be executed if ajax call is not successful.
   	function FAIL(resp, status, msg, p){
   	    p.$link.addClass('error');
         var image = document.getElementById("dot");
@@ -120,13 +130,6 @@
         iframe.contents().find('head').html(head);
         iframe.contents().find('body').attr(bodyAttr).html(body);
   	}
-  	//Function to be executed for every object in data and data1.
-  	function addOV(p){
-  	    p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
-        $("#results").append(p.$el);
-        p.$link = $('<li><a href="#'+ p.elId+'"><span>'+ p.elId +'</span>('+ p.url +')</a></li>');
-        $("#nav").append(p.$link);
-    }
     //Make p the class "loaded".
     function addLoadedClass(p) {
         p.$link.addClass('loaded');
@@ -165,10 +168,11 @@
                 if (p.url) {URLsInData++}
             })     
    
+    
     for (i=0; i < data.length; i++) {
       (function(index) {
       var p = data[index]
-      addOV(p)
+      var ajaxTime = Date.now();
       
         $.ajax({
   	      url: p.url,
@@ -179,6 +183,11 @@
   	  
   	        }).done(function(resp) {
   	          if(!resp && p.elId != 'Lead Delete1' && p.elId != 'Lead Delete2' && p.elId != 'Lead Delete3')return;
+  	          
+  	          var totalTime = Date.now()-ajaxTime;
+  	          console.log(totalTime);
+  	          addOV(p, totalTime);
+  	          if (totalTime > 500) {p.$link.addClass("long")}
   	          
   	          if(p.elId == 'Create Lead1'){ID1 = resp.id;}
   	          else if (p.elId == 'Create Lead2'){ID2 = resp.id}
