@@ -1,5 +1,5 @@
 What I did
-======================
+----------
 I set the development environment up at the beginning. I had to install vagrant, which runs Ubuntu without UI so that
 it is only accessible by console, for that.
 I also created my own Git account using a SSH key for that.
@@ -18,12 +18,12 @@ For the for loop to work properly, I had to write a function that executes the A
 To find out how to do that, I created a StackOverflow account and asked there.
 Here is the code for that:
 
-for (i=0; i < data.length; i++) {
-    (function(index) {
-      var p = data[index]
-      ...
-      $.ajax({
-      ...
+    for (i=0; i < data.length; i++) {
+        (function(index) {
+            var p = data[index]
+            ...
+            $.ajax({
+            ...
   	  
 I added the ms in which the URLs responded afterwards. Then I made the requests to be shown formatted for Fiddler at
 the bottom of the page.
