@@ -27,5 +27,14 @@ Here is the code for that:
   	  
 I added the ms in which the URLs responded afterwards. Then I made the requests to be shown formatted for Fiddler at
 the bottom of the page.
-I also made the debug page look a little nicer with CSS.
+I also made the debug page look a little nicer with CSS. I made the textboxes that contain the for Fiddler formatted request yellow. 
+
+    in CSS:
+    .TAS {
+    background-color: rgba(255, 255, 100, .5);
+    }
+    in Javascript:
+    var FTextArea = document.createElement("TEXTAREA");
+        FTextArea.className = 'TAS';
+    
 I uploaded the page to github pages: http://spikele.github.io/
