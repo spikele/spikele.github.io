@@ -31,15 +31,20 @@
         background-color: rgba(255,255,255,.8);
       }
       .nav > li:hover {
-        background-color: rgba(0,0,0,.2);
+        background-color: rgba(0,0,255,.2);
       }
 
       .nav > li.loaded span.elId {
         font-weight:900;
         text-transform: uppercase;
+      }.nav > li.LstatusT span.elId{
+        color:#00CC00;
+      }
+      .nav > li.LstatusF span.elId{
+        color:#CC0000;
       }
       .nav > li.long span.time {
-        color:#CC0000
+        color:#FF0000
       }
       .nav > li.error {
         color:white;
@@ -59,32 +64,34 @@
         width:100%;
         height: 1200px;
       }
-      .LstatusT {
-        color:#00CC00;
+      .FTAID {
+          font-weight:900;
       }
-      .LstatusF {
-        color:#CC0000;
-      }      
-      
+      .TAS {
+          background-color: rgba(255, 255, 100, .5);
+      }
     </style>
   </head>
   <body>
-  <img id="dot" src="http://4.bp.blogspot.com/_wWmWqyCEKEs/TSEQUbgrQZI/AAAAAAAADuQ/nle2R79B7Tw/s200/old_employee.png" alt="dot" align="right">
+  <img id="dot" src="greydot.png" alt="dot" align="right">
+  <a href="#bottom">to bottom</a>
   <h3>Number of Successes:</h3> 
   <p id="Successes"></p>  
-  <p id="L1">Lead1(ComingUp)</p><p id="L2">Lead2(Today)</p><p id="L3">Lead3(Hanging)</p>
   <br>
-  	
+  <p>Create Leads are green if they have the according to the scheduled date correct status.</p>
+  <p>1: ComingUp,&emsp;2: Today,&emsp;3: Hanging</p>
   	
   	<ol class="nav" id="nav"></ol>
     <div id="results"></div>
-  	
+  	<h2>For Fiddler formatted Request</h2>
+  	<a name="bottom">
   	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
   	<script>
   	var Successes = 0;
   	var ID1 ='test1';
   	var ID2 ='test2';
     var ID3 ='test3'
+    var Lengths = [171, 171, 171, 387, 0, 0, 0, 389, 389, 389, 389, 387, 387 ,387]
     
     //Get the current Date.
     var d = new Date();
@@ -95,8 +102,43 @@
             if(dd<10) {dd='0'+dd}
             if(mm<10) {mm='0'+mm} 
         today = yyyy+'-'+mm+'-'+dd+'T00:00:00';
+  	function FText(p, index) {
+  	    var FTAID = document.createElement("div");
+  	    var t1 = document.createTextNode(p.elId)
+  	    FTAID.className = 'FTAID'
+  	    var FTextArea = document.createElement("TEXTAREA");
+  	    FTextArea.className = 'TAS';
+  	    FTextArea.rows='6'
+  	    FTextArea.cols='180'
+  	    var FTextAll = 'User-Agent: Fiddler\nHost: devapidb.cloudapp.net:8863\nOrigin: Localhost\nContent-type: application/json\n'
+  	    var FTextO = p.METHOD+' '+p.url+' HTTP/1.1\n'
+  	    var FTextGD = p.METHOD+' '+p.url.slice(0, 50)+'PUT ID HERE'+p.url.slice( -28,-1)+' HTTP/1.1\n'
+  	    
+  	    if (p.DATA) {
+  	        var DATA = JSON.stringify(p.DATA)
+  	        t=document.createTextNode(FTextO+FTextAll+'Content-Length: '+Lengths[index]+'\n'+DATA);}
+  	    else if(p.elId=='Get Lead1' || p.elId=='Get Lead2' || p.elId=='Get Lead3') 
+  	        {t=document.createTextNode(FTextGD+FTextAll)}
+  	    else if(p.elId=='Lead Delete1' || p.elId=='Lead Delete2' || p.elId=='Lead Delete3')
+  	        {t=document.createTextNode(FTextGD+FTextAll+'Content-Length: '+Lengths[index])}
+  	    else 
+  	        {t=document.createTextNode(FTextO+FTextAll+'Content-Length: '+Lengths[index])}
+  	    
+  	    FTAID.appendChild(t1);
+  	    FTextArea.appendChild(t);
+  	    document.body.appendChild(FTAID);
+  	    document.body.appendChild(FTextArea);
+  	    
+  	    //select on click
+  	    $(".TAS").focus(function() {
+            var $this = $(this);
+            $this.select();
+            $this.mouseup(function() {
+                $this.unbind("mouseup");
+                return false;   });    });
+  	}
   	//Function to be executed for every object in data and data1.
-  	function addOV(p, totalTime){
+  	function addOV(p, totalTime, index){
   	    p.$el = $('<div id="'+p.elId+'"><h1 class="heading">'+p.elId+'</h1><a href="#">to top</a><div class="result"></div></div>');
         $("#results").append(p.$el);
         p.$link = $('<li class="LI"><a href="#'+ p.elId+'"><span class="elId">'+ p.elId +'</span>('+ p.url +')<span class="time">'+totalTime+'ms'+'</span></a></li>');
@@ -106,7 +148,7 @@
   	function FAIL(resp, status, msg, p){
   	    p.$link.addClass('error');
         var image = document.getElementById("dot");
-        image.src = "http://www.thepointless.com/images/reddot.jpg";
+        image.src = "./reddot.png";
         var fullContent = resp.responseText.replace(/\n/g, '').replace(/\>\s+\</g, '><');
         var head = (fullContent.match(/\<head[^\>]*\>(.*)\<\/head\>/) || ['',''])[1];
         var body = (fullContent.match(/\<body[^\>]*\>(.*)\<\/body\>/) || ['',''])[1];
@@ -137,12 +179,12 @@
         document.getElementById("Successes").innerHTML=Successes+'/'+URLsInData;
         if (Successes == URLsInData) {
             var image = document.getElementById("dot");
-            image.src = "http://www.thepointless.com/images/greendot.jpg"}              
+            image.src = "./greendot.png"}              
     }
-    //Show Leads with their status in green if the Lead has the according to the scheduled date right status, else in red.
+    //Show Leads in green if the Lead has the according to the scheduled date correct status, else in red.
   	function LeadStatus(LNum, expStatus, p, resp) {
-  	    if (p.elId == 'Create Lead'+LNum && resp.status == expStatus) {$('#L'+LNum).addClass('LstatusT')}
-  	    else if(p.elId == 'Create Lead'+LNum) {$('#L'+LNum).addClass('LstatusF')};
+  	    if (p.elId == 'Create Lead'+LNum && resp.status == expStatus) {p.$link.addClass('LstatusT')}
+  	    else if(p.elId == 'Create Lead'+LNum) {p.$link.addClass('LstatusF')};
   	}
     
   	var data = [
@@ -154,9 +196,9 @@
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead2', 'ASYNC': true, 'METHOD': 'GET'},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Get Lead3', 'ASYNC': true, 'METHOD': 'GET'},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/?api_key=1234asdf23t523f5ya', 'elId': 'Edit Lead', 'ASYNC': true, 'METHOD': 'PUT', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
-    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/hanging?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Hanging Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/comingup?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Coming up Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/today?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Todays Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
+    {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/hanging?api_key=1234asdf23t523f5ya&limit=10&offset=0', 'elId': 'Hanging Leads', 'ASYNC': true, 'METHOD': 'GET', 'DATA': {"id":"leads/1","title":"Very Intersting Dev Project","created":"0001-01-01T00:00:00","phase":0,"status":0,"events":[{"id":"d08bce8d-4323-4a56-ba8b-f6a1df029e28","created":"2014-06-23T10:26:47","scheduled":"0001-01-01T00:00:00","type":0,"notes":"something about maps, payment and instagram for pets. Its going to drive conversion and customer retention","subject":null}],"contacts":null}},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete1', 'ASYNC': true, 'METHOD': 'DELETE'},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID2 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete2', 'ASYNC': true, 'METHOD': 'DELETE'},
     {'url':'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID3 + '/?api_key=1234asdf23t523f5ya', 'elId': 'Lead Delete3', 'ASYNC': true, 'METHOD': 'DELETE'}
@@ -166,8 +208,7 @@
   	var URLsInData = 0
             data.forEach(function(p){
                 if (p.url) {URLsInData++}
-            })     
-   
+            })        
     
     for (i=0; i < data.length; i++) {
       (function(index) {
@@ -186,7 +227,7 @@
   	          
   	          var totalTime = Date.now()-ajaxTime;
   	          console.log(totalTime);
-  	          addOV(p, totalTime);
+  	          addOV(p, totalTime, index);
   	          if (totalTime > 500) {p.$link.addClass("long")}
   	          
   	          if(p.elId == 'Create Lead1'){ID1 = resp.id;}
@@ -212,9 +253,12 @@
   	          
           	}).fail(function(resp, status, msg) { 
               FAIL(resp, status, msg, p);
-            })
+            });
+      
+      FText(p, index);
         })(i);
-      }
+      
+      } 
   	</script>
   </body>
 </html>
