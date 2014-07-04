@@ -2,7 +2,7 @@ What I did
 ----------
 I set the development environment up at the beginning. I had to install vagrant, which runs Ubuntu without UI so that
 it is only accessible by console, for that.
-I also created my own Git account using a SSH key for that.
+I also created my own Git account using a SSH key, which I generated, for that.
 On the debug page for senzari, the objects in an array are called with an AJAX call. The items are shown in a list on the page. If they were not called succesfully, they are shown in red. I added a red dot that is shown if one call fails and a green dot that is shown if all calls were successfull. I also made a counter that shows how many AJAX calls were successfull. I did that using Javascript and a little HTML, which I didn't know before.
 
 Then I made a debug page for Lead Tracker. After adding two more Lead Creates, Gets and Deletes so that it is shown if the Created Leads have the corresponding to the scheduled date correct status, I made the code cleaner.
