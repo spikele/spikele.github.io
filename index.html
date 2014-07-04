@@ -74,7 +74,6 @@
   </head>
   <body>
   <img id="dot" src="greydot.png" alt="dot" align="right">
-  <a href="#bottom">to bottom</a>
   <h3>Number of Successes:</h3> 
   <p id="Successes"></p>  
   <br>
@@ -83,8 +82,6 @@
   	
   	<ol class="nav" id="nav"></ol>
     <div id="results"></div>
-  	<h2>For Fiddler formatted Request</h2>
-  	<a name="bottom">
   	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
   	<script>
   	var Successes = 0;
@@ -103,32 +100,27 @@
             if(mm<10) {mm='0'+mm} 
         today = yyyy+'-'+mm+'-'+dd+'T00:00:00';
   	function FText(p, index) {
-  	    var FTAID = document.createElement("div");
-  	    var t1 = document.createTextNode(p.elId)
-  	    FTAID.className = 'FTAID'
-  	    var FTextArea = document.createElement("TEXTAREA");
-  	    FTextArea.className = 'TAS';
-  	    FTextArea.rows='6'
-  	    FTextArea.cols='180'
+  	    var FTAID = $('<div class="FTAID"></div>').appendTo(p.$el);
+        var FTextArea = $('<textarea class="TAS" rows=8 cols=180></textarea>').appendTo(FTAID);
+  	    
   	    var FTextAll = 'User-Agent: Fiddler\nHost: devapidb.cloudapp.net:8863\nOrigin: Localhost\nContent-type: application/json\n'
   	    var FTextO = p.METHOD+' '+p.url+' HTTP/1.1\n'
   	    var FTextGD = p.METHOD+' '+p.url.slice(0, 50)+'PUT ID HERE'+p.url.slice( -28,-1)+' HTTP/1.1\n'
   	    
+  	    var text = '';
+  	    
   	    if (p.DATA) {
   	        var DATA = JSON.stringify(p.DATA)
-  	        t=document.createTextNode(FTextO+FTextAll+'Content-Length: '+Lengths[index]+'\n'+DATA);}
-  	    else if(p.elId=='Get Lead1' || p.elId=='Get Lead2' || p.elId=='Get Lead3') 
-  	        {t=document.createTextNode(FTextGD+FTextAll)}
+  	        text = FTextO+FTextAll+'Content-Length: '+Lengths[index]+'\n'+DATA;
+  	    } else if(p.elId=='Get Lead1' || p.elId=='Get Lead2' || p.elId=='Get Lead3') 
+  	        text= FTextGD+FTextAll
   	    else if(p.elId=='Lead Delete1' || p.elId=='Lead Delete2' || p.elId=='Lead Delete3')
-  	        {t=document.createTextNode(FTextGD+FTextAll+'Content-Length: '+Lengths[index])}
+  	        text= FTextGD+FTextAll+'Content-Length: '+Lengths[index]
   	    else 
-  	        {t=document.createTextNode(FTextO+FTextAll+'Content-Length: '+Lengths[index])}
-  	    
-  	    FTAID.appendChild(t1);
-  	    FTextArea.appendChild(t);
-  	    document.body.appendChild(FTAID);
-  	    document.body.appendChild(FTextArea);
-  	    
+  	        text= FTextO+FTextAll+'Content-Length: '+Lengths[index]
+  	        
+  	    FTextArea.val(text);
+          	    
   	    //select on click
   	    $(".TAS").focus(function() {
             var $this = $(this);
@@ -240,7 +232,9 @@
           	     LeadStatus(3, "Hanging", p, resp)
           	  };
               addLoadedClass(p)
+  	          FText(p, index);
   	          $("<pre></pre>").appendTo(p.$el).text(JSON.stringify(resp, undefined, 2));
+  	          
   	          
   	          if(p.elId == 'Create Lead3') {
   	             data[i+2].url = 'http://devapidb.cloudapp.net:8863/0.0.1/web/leads/' + ID1 + '/?api_key=1234asdf23t523f5ya'
@@ -255,7 +249,7 @@
               FAIL(resp, status, msg, p);
             });
       
-      FText(p, index);
+      
         })(i);
       
       } 
